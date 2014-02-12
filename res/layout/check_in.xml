@@ -1,0 +1,43 @@
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context=".CheckIn" >
+
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="wrap_content"
+        android:layout_height="240dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <ListView
+        android:id="@+id/lvVenues"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/map"
+        android:layout_below="@+id/map"
+        android:cacheColorHint="#00000000"
+        android:choiceMode="multipleChoice"
+        android:drawSelectorOnTop="false"
+        android:listSelector="@android:color/darker_gray" >
+
+<!--         android:scrollingCache="false" -->
+<!--         android:drawSelectorOnTop="false" -->
+      
+      
+    </ListView>
+
+    <Button
+        android:id="@+id/refresh"
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="@string/btn_refresh" />
+
+</RelativeLayout>
