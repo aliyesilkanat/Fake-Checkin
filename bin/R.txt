@@ -61,14 +61,15 @@ int drawable ic_plusone_medium_off_client 0x7f02001c
 int drawable ic_plusone_small_off_client 0x7f02001d
 int drawable ic_plusone_standard_off_client 0x7f02001e
 int drawable ic_plusone_tall_off_client 0x7f02001f
-int id action_settings 0x7f06000b
+int id action_settings 0x7f06000c
 int id btnLogin 0x7f060006
-int id frame 0x7f06000a
+int id frame 0x7f06000b
 int id hybrid 0x7f060004
 int id lvVenues 0x7f060008
 int id map 0x7f060007
 int id none 0x7f060000
 int id normal 0x7f060001
+int id progressBar 0x7f06000a
 int id refresh 0x7f060009
 int id satellite 0x7f060002
 int id terrain 0x7f060003

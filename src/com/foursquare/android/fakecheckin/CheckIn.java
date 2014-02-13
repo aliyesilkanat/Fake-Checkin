@@ -1,8 +1,6 @@
 package com.foursquare.android.fakecheckin;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,12 +9,9 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -29,9 +24,10 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -40,7 +36,6 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class CheckIn extends FragmentActivity {
@@ -48,6 +43,7 @@ public class CheckIn extends FragmentActivity {
 	final String[] venuesId = new String[20];
 	private GoogleMap myMap;
 	private SharedPreferences.Editor prefsEditor;
+	public ProgressBar prog;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -56,8 +52,10 @@ public class CheckIn extends FragmentActivity {
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
 				.permitAll().build();
 		StrictMode.setThreadPolicy(policy);
-		final ListView lv = (ListView) findViewById(R.id.lvVenues);
 
+		final ListView lv = (ListView) findViewById(R.id.lvVenues);
+		prog = (ProgressBar) findViewById(R.id.progressBar);
+		prog.setVisibility(View.GONE);
 		// map settings
 		android.support.v4.app.FragmentManager myFragmentManager = getSupportFragmentManager();
 		SupportMapFragment mySupportMapFragment = (SupportMapFragment) myFragmentManager
@@ -93,9 +91,9 @@ public class CheckIn extends FragmentActivity {
 			@Override
 			public void onCameraChange(CameraPosition position) {
 				// TODO Auto-generated method stub
-					myMap.clear();
-					myMap.addMarker(new MarkerOptions().position(position.target));
-					
+				myMap.clear();
+				myMap.addMarker(new MarkerOptions().position(position.target));
+
 			}
 		});
 
@@ -167,44 +165,23 @@ public class CheckIn extends FragmentActivity {
 		return true;
 	}
 
-	private Location parseVenues(Location ll) {
+	private void parseVenues(Location ll) {
 
-		String venueSearchUrl = "https://api.foursquare.com/v2/venues/search?ll="
-				+ ll.getLatitude()
-				+ ","
-				+ ll.getLongitude()
-				+ "&llAcc=1&altAcc=1&limit=20&oauth_token="
-				+ MainActivity.ACCESS_TOKEN + "&v=20140212";
+		ListView lv = (ListView) findViewById(R.id.lvVenues);
+		lv.setVisibility(View.GONE);
+
+		// prog.animate();
 		try {
-			DefaultHttpClient defaultClient = new DefaultHttpClient();
-			HttpGet httpGetRequest = new HttpGet(venueSearchUrl);
-			HttpResponse httpResponse = defaultClient.execute(httpGetRequest);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					httpResponse.getEntity().getContent(), "UTF-8"));
-			String json = reader.readLine();
-
-			JSONObject jsonObject = new JSONObject(json);
-			String s = jsonObject.getString("response");
-
-			JSONObject responseJson = new JSONObject(s);
-			JSONArray arrayVenues = responseJson.getJSONArray("venues");
-			for (int i = 0; i < arrayVenues.length(); i++) {
-				JSONObject jObj = arrayVenues.getJSONObject(i);
-				names[i] = jObj.getString("name");
-				venuesId[i] = jObj.getString("id");
-			}
-			ListView listView = (ListView) findViewById(R.id.lvVenues);
-			ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-					android.R.layout.simple_list_item_1, names);
-
-			listView.setAdapter(adapter);
-
+			new LoadVenues().execute(ll, names, venuesId, this);
 		} catch (Exception e) {
 			// In your production code handle any errors and catch the
 			// individual exceptions
-			e.printStackTrace();
+			Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT)
+					.show();
 		}
-		return ll;
+
+		lv.setVisibility(View.VISIBLE);
+		return;
 	}
 
 	private LatLng adjustMap(Location lastKnownLocation) {
