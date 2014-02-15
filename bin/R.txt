@@ -78,7 +78,6 @@ int integer google_play_services_version 0x7f070000
 int layout activity_main 0x7f030000
 int layout check_in 0x7f030001
 int layout loading 0x7f030002
-int layout test1 0x7f030003
 int menu check_in 0x7f090000
 int menu test1 0x7f090001
 int string action_settings 0x7f040020

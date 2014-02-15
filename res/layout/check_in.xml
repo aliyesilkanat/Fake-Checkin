@@ -19,6 +19,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/map"
+        android:layout_alignParentBottom="true"
         android:layout_below="@+id/map"
         android:cacheColorHint="#00000000"
         android:choiceMode="multipleChoice"

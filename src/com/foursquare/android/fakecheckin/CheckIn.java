@@ -1,18 +1,5 @@
 package com.foursquare.android.fakecheckin;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -39,8 +26,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class CheckIn extends FragmentActivity {
-	final String[] names = new String[20];
-	final String[] venuesId = new String[20];
+	final Venue venueList[] = new Venue[20];
 	private GoogleMap myMap;
 	private SharedPreferences.Editor prefsEditor;
 	public ProgressBar prog;
@@ -52,7 +38,9 @@ public class CheckIn extends FragmentActivity {
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
 				.permitAll().build();
 		StrictMode.setThreadPolicy(policy);
-
+		for (int i = 0; i < venueList.length; i++) {
+			venueList[i] = new Venue();
+		}
 		final ListView lv = (ListView) findViewById(R.id.lvVenues);
 		prog = (ProgressBar) findViewById(R.id.progressBar);
 		prog.setVisibility(View.GONE);
@@ -116,9 +104,6 @@ public class CheckIn extends FragmentActivity {
 
 		lv.setClickable(true);
 		lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			HttpClient httpclient = new DefaultHttpClient();
-			HttpPost httppost = new HttpPost(
-					"https://api.foursquare.com/v2/checkins/add");
 
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1,
@@ -126,32 +111,7 @@ public class CheckIn extends FragmentActivity {
 				// arg0.getChildAt(position).setBackgroundColor(Color.RED);
 				// arg1.setBackgroundColor(Color.RED);
 				// lv.getChildAt(position).setBackgroundColor(Color.RED);
-				try {
-
-					List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(
-							2);
-					nameValuePairs.add(new BasicNameValuePair("venueId",
-							venuesId[position]));
-					nameValuePairs.add(new BasicNameValuePair("oauth_token",
-							MainActivity.ACCESS_TOKEN));
-
-					// gecici olarak alttaki satiri tut, program çalýþtýrýrken
-					// sil
-					nameValuePairs.add(new BasicNameValuePair("broadcast",
-							"private"));
-
-					httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-					// Execute HTTP Post Request
-					HttpResponse response = httpclient.execute(httppost);
-					// lv.getChildAt(position).setBackgroundColor(Color.BLUE);
-					// arg1.setBackgroundColor(Color.BLUE);
-					// arg0.getChildAt(position).setBackgroundColor(Color.BLUE);
-				} catch (ClientProtocolException e) {
-					// TODO Auto-generated catch block
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-				}
+				new MakeCheckIn().execute(venueList, position);
 			}
 
 		});
@@ -172,7 +132,7 @@ public class CheckIn extends FragmentActivity {
 
 		// prog.animate();
 		try {
-			new LoadVenues().execute(ll, names, venuesId, this);
+			new LoadVenues().execute(ll, venueList, this);
 		} catch (Exception e) {
 			// In your production code handle any errors and catch the
 			// individual exceptions
