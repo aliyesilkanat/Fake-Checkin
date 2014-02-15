@@ -1,5 +1,6 @@
 package com.foursquare.android.fakecheckin;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -103,6 +104,7 @@ public class CheckIn extends FragmentActivity {
 		});
 
 		lv.setClickable(true);
+		final Activity act = this;
 		lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
 			@Override
@@ -111,7 +113,7 @@ public class CheckIn extends FragmentActivity {
 				// arg0.getChildAt(position).setBackgroundColor(Color.RED);
 				// arg1.setBackgroundColor(Color.RED);
 				// lv.getChildAt(position).setBackgroundColor(Color.RED);
-				new MakeCheckIn().execute(venueList, position);
+				new MakeCheckIn().execute(venueList, position,arg1,act);
 			}
 
 		});

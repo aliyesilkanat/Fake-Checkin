@@ -76,10 +76,17 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 				venueList[i].name = jObj.getString("name");
 				venueList[i].venueId = jObj.getString("id");
 
-				JSONArray jCategoryArr = jObj.getJSONArray("categories");
-				JSONObject jCategoryObj = jCategoryArr.getJSONObject(0);
-				venueList[i].category = jCategoryObj.getString("shortName");
-
+				if (jObj.has("categories")) {
+					JSONArray jCategoryArr = jObj.getJSONArray("categories");
+					if (!jCategoryArr.isNull(0)) {
+						JSONObject jCategoryObj = jCategoryArr.getJSONObject(0);
+						if (jCategoryObj.has("shortName"))
+							venueList[i].category = jCategoryObj
+									.getString("shortName");
+					}
+					// else
+					// venueList[i].category= "";
+				}
 				String locationStr = jObj.getString("location");
 				JSONObject responseLocation = new JSONObject(locationStr);
 				if (responseLocation.has("address"))
@@ -88,9 +95,11 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 							.getString("address");
 				else if (responseLocation.has("city"))
 					venueList[i].address = responseLocation.getString("city");
-				else
+				else if (responseLocation.has("country"))
 					venueList[i].address = responseLocation
 							.getString("country");
+				// else venueList[i].address="";
+
 			}
 		} catch (Exception e) {
 
