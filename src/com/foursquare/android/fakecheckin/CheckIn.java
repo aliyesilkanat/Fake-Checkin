@@ -34,19 +34,18 @@ public class CheckIn extends FragmentActivity {
 	private SharedPreferences.Editor prefsEditor;
 	public ProgressBar prog;
 	public View row;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.check_in);
-		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
-				.permitAll().build();
-		StrictMode.setThreadPolicy(policy);
+	
 		for (int i = 0; i < venueList.length; i++) {
 			venueList[i] = new Venue();
+			venueList[i].address = "";
+			venueList[i].category = "";
 		}
 
-
-		
 		final ListView lv = (ListView) findViewById(R.id.lvVenues);
 		prog = (ProgressBar) findViewById(R.id.progressBar);
 		prog.setVisibility(View.GONE);
@@ -110,12 +109,9 @@ public class CheckIn extends FragmentActivity {
 
 		lv.setClickable(true);
 		final Activity act = this;
-		
-		
-		
+
 		lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
-			
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1,
 					int position, long arg3) {
@@ -123,16 +119,15 @@ public class CheckIn extends FragmentActivity {
 				// arg0.getChildAt(position).setBackgroundColor(Color.RED);
 				// arg1.setBackgroundColor(Color.RED);
 				// lv.getChildAt(position).setBackgroundColor(Color.RED);
-//				   if (row != null) {
-//				        row.setBackgroundColor(Color.TRANSPARENT);
-//				    }
-//				    row = arg1;
-//				    arg1.setBackgroundColor(color.common_signin_btn_dark_text_focused);
-//				
-				
-				
-				new MakeCheckIn().execute(venueList, position,arg1,act);
-			
+				// if (row != null) {
+				// row.setBackgroundColor(Color.TRANSPARENT);
+				// }
+				// row = arg1;
+				// arg1.setBackgroundColor(color.common_signin_btn_dark_text_focused);
+				//
+
+				new MakeCheckIn().execute(venueList, position, arg1, act);
+
 			}
 
 		});

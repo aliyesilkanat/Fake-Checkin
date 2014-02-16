@@ -26,6 +26,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * @author smsng
@@ -33,6 +34,7 @@ import android.widget.TextView;
  */
 public class LoadVenues extends AsyncTask<Object, View, Activity> {
 	Venue venueList[];
+	JSONArray arrayVenues;
 
 	@Override
 	protected Activity doInBackground(Object... params) throws RuntimeException {
@@ -40,7 +42,7 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 		MakeCheckIn.initializeCheckedInArrays();
 		Location ll = (Location) params[0];
 		venueList = (Venue[]) params[1];
-		Activity act = (Activity) params[2];
+		final Activity act = (Activity) params[2];
 		final ProgressBar prog = (ProgressBar) act
 				.findViewById(R.id.progressBar);
 
@@ -73,36 +75,53 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 			String s = jsonObject.getString("response");
 
 			JSONObject responseJson = new JSONObject(s);
-			JSONArray arrayVenues = responseJson.getJSONArray("venues");
-			for (int i = 0; i < arrayVenues.length(); i++) {
-				JSONObject jObj = arrayVenues.getJSONObject(i);
-				venueList[i].name = jObj.getString("name");
-				venueList[i].venueId = jObj.getString("id");
+			arrayVenues = responseJson.getJSONArray("venues");
+			if (arrayVenues.length() == 0)
 
-				if (jObj.has("categories")) {
-					JSONArray jCategoryArr = jObj.getJSONArray("categories");
-					if (!jCategoryArr.isNull(0)) {
-						JSONObject jCategoryObj = jCategoryArr.getJSONObject(0);
-						if (jCategoryObj.has("shortName"))
-							venueList[i].category = jCategoryObj
-									.getString("shortName");
+			{
+				act.runOnUiThread(new Runnable() {
+
+					@Override
+					public void run() {
+						Toast.makeText(act.getApplicationContext(),
+								"Mekan bulunamadý", Toast.LENGTH_LONG).show();
+
 					}
-					// else
-					// venueList[i].category= "";
+				});
+			} else {
+				for (int i = 0; i < arrayVenues.length(); i++) {
+					JSONObject jObj = arrayVenues.getJSONObject(i);
+					venueList[i].name = jObj.getString("name");
+					venueList[i].venueId = jObj.getString("id");
+
+					if (jObj.has("categories")) {
+						JSONArray jCategoryArr = jObj
+								.getJSONArray("categories");
+						if (!jCategoryArr.isNull(0)) {
+							JSONObject jCategoryObj = jCategoryArr
+									.getJSONObject(0);
+							if (jCategoryObj.has("shortName"))
+								venueList[i].category = jCategoryObj
+										.getString("shortName");
+						}
+						// else
+						// venueList[i].category= "";
+					}
+					String locationStr = jObj.getString("location");
+					JSONObject responseLocation = new JSONObject(locationStr);
+					if (responseLocation.has("address"))
+
+						venueList[i].address = responseLocation
+								.getString("address");
+					else if (responseLocation.has("city"))
+						venueList[i].address = responseLocation
+								.getString("city");
+					else if (responseLocation.has("country"))
+						venueList[i].address = responseLocation
+								.getString("country");
+					// else venueList[i].address="";
+
 				}
-				String locationStr = jObj.getString("location");
-				JSONObject responseLocation = new JSONObject(locationStr);
-				if (responseLocation.has("address"))
-
-					venueList[i].address = responseLocation
-							.getString("address");
-				else if (responseLocation.has("city"))
-					venueList[i].address = responseLocation.getString("city");
-				else if (responseLocation.has("country"))
-					venueList[i].address = responseLocation
-							.getString("country");
-				// else venueList[i].address="";
-
 			}
 		} catch (Exception e) {
 
@@ -117,63 +136,73 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 		super.onPostExecute(result);
 
 		final ListView listView = (ListView) result.findViewById(R.id.lvVenues);
+		if (arrayVenues.length()> 0) {
+			result.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
 
-		result.runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
+					List<Map<String, String>> data = new ArrayList<Map<String, String>>();
 
-				List<Map<String, String>> data = new ArrayList<Map<String, String>>();
-
-				for (Venue v : venueList) {
-					Map<String, String> datum = new HashMap<String, String>(2);
-					datum.put("First Line", v.name);
-					datum.put("Second Line", v.category + " / " + v.address);
-					data.add(datum);
-				}
-
-				SimpleAdapter adapter = new SimpleAdapter(result, data,
-						android.R.layout.simple_list_item_2, new String[] {
-								"First Line", "Second Line" }, new int[] {
-								android.R.id.text1, android.R.id.text2 }) {
-
-					@Override
-					public View getView(int position, View convertView,
-							ViewGroup parent) {
-
-						if (convertView != null) {
-							TextView text1 = ((TextView) convertView
-									.findViewById(android.R.id.text1));
-							TextView text2 = ((TextView) convertView
-									.findViewById(android.R.id.text2));
-							if (MakeCheckIn.checkedInVenuesIds[position]) {
-								convertView
-										.setBackgroundResource(R.color.custom1);
-							
-
-								text1.setTextColor(Color.BLACK);
-								text2.setTextColor(Color.BLACK);
-							}
-
-							else{
-								convertView
-										.setBackgroundColor(Color.TRANSPARENT);
-								text1.setTextColor(Color.WHITE);
-								text2.setTextColor(Color.WHITE);
-							}
-						}
-						this.notifyDataSetChanged();
-
-						return super.getView(position, convertView, parent);
+					for (Venue v : venueList) {
+						Map<String, String> datum = new HashMap<String, String>(
+								2);
+						datum.put("First Line", v.name);
+						datum.put("Second Line", v.category + " / " + v.address);
+						data.add(datum);
 					}
 
-				};
+					SimpleAdapter adapter = new SimpleAdapter(result, data,
+							android.R.layout.simple_list_item_2, new String[] {
+									"First Line", "Second Line" }, new int[] {
+									android.R.id.text1, android.R.id.text2 }) {
 
+						@Override
+						public View getView(int position, View convertView,
+								ViewGroup parent) {
+
+							if (convertView != null) {
+								TextView text1 = ((TextView) convertView
+										.findViewById(android.R.id.text1));
+								TextView text2 = ((TextView) convertView
+										.findViewById(android.R.id.text2));
+								if (MakeCheckIn.checkedInVenuesIds[position]) {
+									convertView
+											.setBackgroundResource(R.color.custom1);
+
+									text1.setTextColor(Color.BLACK);
+									text2.setTextColor(Color.BLACK);
+								}
+
+								else {
+									convertView
+											.setBackgroundColor(Color.TRANSPARENT);
+									text1.setTextColor(Color.WHITE);
+									text2.setTextColor(Color.WHITE);
+								}
+							}
+							this.notifyDataSetChanged();
+
+							return super.getView(position, convertView, parent);
+						}
+
+					};
+
+					
+					listView.setAdapter(adapter);
+					listView.setVisibility(View.VISIBLE);
+				}
+			});
+		}
+		//if koslu disina yapýlarak liste bos oldugunda da progressBar ýn donmesi onlendi
+		result.runOnUiThread(new Runnable() {
+			
+			@Override
+			public void run() {
 				ProgressBar prog = (ProgressBar) result
 						.findViewById(R.id.progressBar);
 
 				prog.setVisibility(View.GONE);
-				listView.setAdapter(adapter);
-				listView.setVisibility(View.VISIBLE);
+				
 			}
 		});
 

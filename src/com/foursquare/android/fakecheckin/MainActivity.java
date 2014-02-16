@@ -15,9 +15,13 @@
  */
 package com.foursquare.android.fakecheckin;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
@@ -46,7 +50,7 @@ public class MainActivity extends FragmentActivity {
 
 	private static final int REQUEST_CODE_FSQ_CONNECT = 200;
 	private static final int REQUEST_CODE_FSQ_TOKEN_EXCHANGE = 201;
-	
+
 	/**
 	 * Obtain your client id and secret from:
 	 * https://foursquare.com/developers/apps
@@ -64,21 +68,42 @@ public class MainActivity extends FragmentActivity {
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
 				.permitAll().build();
 		StrictMode.setThreadPolicy(policy);
+		ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-		SharedPreferences sharedPref = getSharedPreferences(
-				"fakeCheckInTokenFile", MODE_PRIVATE);
-		prefsEditor = sharedPref.edit();
+		NetworkInfo ni = cm.getActiveNetworkInfo();
+		if (ni == null) {
 
-		String token = sharedPref.getString("accessToken", "");
-		if (token.equals(""))
-			ensureUi();
-		else {
-			Intent in = new Intent(this, com.foursquare.android.fakecheckin.CheckIn.class);
-			ACCESS_TOKEN=token;
-			startActivity(in);
-			this.finish();
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+			builder.setMessage(
+					"Ýnternet baðlantýsý kurulamadý")
+					.setTitle(
+							R.string.common_google_play_services_network_error_title);
+			builder.setPositiveButton("Kapat",
+					new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int id) {
+							finish();
+						}
+					});
+			AlertDialog dialog = builder.create();
+			dialog.show();
+		} else{
+			SharedPreferences sharedPref = getSharedPreferences(
+					"fakeCheckInTokenFile", MODE_PRIVATE);
+			prefsEditor = sharedPref.edit();
+
+			String token = sharedPref.getString("accessToken", "");
+			if (token.equals(""))
+				ensureUi();
+			else {
+				Intent in = new Intent(this,
+						com.foursquare.android.fakecheckin.CheckIn.class);
+				ACCESS_TOKEN = token;
+				startActivity(in);
+				this.finish();
+			}
+		
 		}
-
 	}
 
 	@Override
@@ -134,9 +159,8 @@ public class MainActivity extends FragmentActivity {
 		});
 		if (isAuthorized) {
 
-
-		    prefsEditor.putString("accessToken", ACCESS_TOKEN);
-		    prefsEditor.commit();
+			prefsEditor.putString("accessToken", ACCESS_TOKEN);
+			prefsEditor.commit();
 			Intent in = new Intent(this, CheckIn.class);
 			startActivity(in);
 			this.finish();
