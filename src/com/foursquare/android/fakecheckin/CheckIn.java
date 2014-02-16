@@ -44,6 +44,9 @@ public class CheckIn extends FragmentActivity {
 		for (int i = 0; i < venueList.length; i++) {
 			venueList[i] = new Venue();
 		}
+
+
+		
 		final ListView lv = (ListView) findViewById(R.id.lvVenues);
 		prog = (ProgressBar) findViewById(R.id.progressBar);
 		prog.setVisibility(View.GONE);
@@ -52,7 +55,7 @@ public class CheckIn extends FragmentActivity {
 		SupportMapFragment mySupportMapFragment = (SupportMapFragment) myFragmentManager
 				.findFragmentById(R.id.map);
 		myMap = mySupportMapFragment.getMap();
-
+		myMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
 		// settting initial location for map and venues
 		SharedPreferences sharedPref = getSharedPreferences(
 				"fakeCheckInTokenFile", MODE_PRIVATE);
