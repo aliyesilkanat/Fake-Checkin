@@ -16,18 +16,27 @@ import org.apache.http.message.BasicNameValuePair;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.view.View;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 
 public class MakeCheckIn extends AsyncTask<Object, View, Activity> {
 	Venue venueList[];
 
+	public static Boolean checkedInVenuesIds[]= new Boolean[20];
+	public static void initializeCheckedInArrays()
+	{
+		for (int i = 0; i < checkedInVenuesIds.length; i++) {
+			checkedInVenuesIds[i]=new Boolean(false);
+		}
+	}
 	@Override
 	protected Activity doInBackground(Object... params) {
 
 		venueList = (Venue[]) params[0];
 		int position = (Integer) params[1];
 		final View view = (View) params[2];
-		Activity act = (Activity) params[3];
+		final Activity act = (Activity) params[3];
 		HttpClient httpclient = new DefaultHttpClient();
 		HttpPost httppost = new HttpPost(
 				"https://api.foursquare.com/v2/checkins/add");
@@ -61,6 +70,7 @@ public class MakeCheckIn extends AsyncTask<Object, View, Activity> {
 			// lv.getChildAt(position).setBackgroundColor(Color.BLUE);
 			// arg1.setBackgroundColor(Color.BLUE);
 			// arg0.getChildAt(position).setBackgroundColor(Color.BLUE);
+			checkedInVenuesIds[position]=true;
 			act.runOnUiThread(new Runnable() {
 
 				@Override
@@ -69,13 +79,16 @@ public class MakeCheckIn extends AsyncTask<Object, View, Activity> {
 					TextView text = ((TextView) view
 							.findViewById(android.R.id.text2));
 					text.setText("CheckIn Yapýldý");
+					ListView listv = (ListView) act.findViewById(R.id.lvVenues);
+					SimpleAdapter adapter= (SimpleAdapter)listv.getAdapter();
+					adapter.notifyDataSetChanged();
 				}
 			});
 
 		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 		return null;

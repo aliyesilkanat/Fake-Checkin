@@ -3,6 +3,7 @@ package com.foursquare.android.fakecheckin;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.foursquare.android.fakecheckin.R.color;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnCameraChangeListener;
@@ -31,7 +33,7 @@ public class CheckIn extends FragmentActivity {
 	private GoogleMap myMap;
 	private SharedPreferences.Editor prefsEditor;
 	public ProgressBar prog;
-
+	public View row;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -105,15 +107,29 @@ public class CheckIn extends FragmentActivity {
 
 		lv.setClickable(true);
 		final Activity act = this;
+		
+		
+		
 		lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
+			
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1,
 					int position, long arg3) {
+				arg1.requestFocusFromTouch();
 				// arg0.getChildAt(position).setBackgroundColor(Color.RED);
 				// arg1.setBackgroundColor(Color.RED);
 				// lv.getChildAt(position).setBackgroundColor(Color.RED);
+//				   if (row != null) {
+//				        row.setBackgroundColor(Color.TRANSPARENT);
+//				    }
+//				    row = arg1;
+//				    arg1.setBackgroundColor(color.common_signin_btn_dark_text_focused);
+//				
+				
+				
 				new MakeCheckIn().execute(venueList, position,arg1,act);
+			
 			}
 
 		});

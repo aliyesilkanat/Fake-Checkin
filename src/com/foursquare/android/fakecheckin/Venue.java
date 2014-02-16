@@ -1,7 +1,9 @@
 package com.foursquare.android.fakecheckin;
 
 public class Venue {
-public Venue(){}
+	public Venue() {
+	}
+
 	public Venue(String name, String venueId, String adress, String venueType) {
 
 		this.name = name;

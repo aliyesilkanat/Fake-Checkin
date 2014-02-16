@@ -1,4 +1,3 @@
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -21,15 +20,22 @@
         android:layout_alignLeft="@+id/map"
         android:layout_alignParentBottom="true"
         android:layout_below="@+id/map"
-        android:cacheColorHint="#00000000"
-        android:choiceMode="multipleChoice"
-        android:drawSelectorOnTop="false"
-        android:listSelector="@android:color/darker_gray" >
+        android:background="#2A323D"
+        android:cacheColorHint="@android:color/transparent"
+        android:focusable="true"
 
-<!--         android:scrollingCache="false" -->
-<!--         android:drawSelectorOnTop="false" -->
-      
-      
+        android:scrollingCache="true" 
+        android:choiceMode="singleChoice" 
+        >
+
+        <!-- android:listSelector="@android:drawable/darker_gray" -->
+        <!-- android:focusable="true" -->
+        <!-- android:choiceMode="singleChoice" -->
+
+
+        <!-- android:scrollingCache="false" -->
+        <!-- android:drawSelectorOnTop="false" -->
+
     </ListView>
 
     <Button
