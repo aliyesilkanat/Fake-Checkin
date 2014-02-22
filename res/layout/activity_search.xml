@@ -1,0 +1,57 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+   android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    tools:context=".Search" >
+
+    <EditText
+        android:id="@+id/editTxtSearch"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@+id/searchImage"
+        android:ems="10"
+        android:hint="Search"
+        android:imeOptions="actionSearch"
+        android:inputType="text"
+        android:maxLength="15"
+        android:singleLine="true" >
+
+        <requestFocus />
+    </EditText>
+
+    <ImageView
+        android:id="@+id/searchImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/editTxtSearch"
+        android:contentDescription="Search Button"
+        android:src="@android:drawable/ic_menu_search" />
+    <!-- android:src="@drawable/ic_action_search" -->
+
+    <ListView
+        android:id="@+id/lvSearchVenues"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/editTxtSearch"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/editTxtSearch"
+        android:background="#2A323D"
+        android:cacheColorHint="@android:color/transparent"
+        android:choiceMode="singleChoice"
+        android:focusable="true"
+        android:scrollingCache="true" >
+    </ListView>
+
+    <ProgressBar
+        android:id="@+id/progressBarSearch"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/map"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="90dp" />
+
+</RelativeLayout>

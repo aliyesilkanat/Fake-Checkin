@@ -1,15 +1,18 @@
 package com.foursquare.android.fakecheckin;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -18,7 +21,6 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.foursquare.android.fakecheckin.R.color;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnCameraChangeListener;
@@ -29,22 +31,17 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class CheckIn extends FragmentActivity {
-	final Venue venueList[] = new Venue[20];
+	List<Venue> venueList = new ArrayList<Venue>();
 	private GoogleMap myMap;
 	private SharedPreferences.Editor prefsEditor;
 	public ProgressBar prog;
 	public View row;
+	public static Location staticLocation = new Location("");
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.check_in);
-	
-		for (int i = 0; i < venueList.length; i++) {
-			venueList[i] = new Venue();
-			venueList[i].address = "";
-			venueList[i].category = "";
-		}
 
 		final ListView lv = (ListView) findViewById(R.id.lvVenues);
 		prog = (ProgressBar) findViewById(R.id.progressBar);
@@ -90,12 +87,11 @@ public class CheckIn extends FragmentActivity {
 			}
 		});
 
-		final Button btn = (Button) findViewById(R.id.refresh);
+		final Button btn = (Button) findViewById(R.id.btnRefresh);
 		btn.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				// TODO Auto-generated method stub
 				ll.setLatitude(myMap.getCameraPosition().target.latitude);
 				ll.setLongitude(myMap.getCameraPosition().target.longitude);
 				parseVenues(ll);
@@ -104,6 +100,7 @@ public class CheckIn extends FragmentActivity {
 				prefsEditor.putString("longitude",
 						String.valueOf(ll.getLongitude()));
 				prefsEditor.commit();
+				
 			}
 		});
 
@@ -116,17 +113,8 @@ public class CheckIn extends FragmentActivity {
 			public void onItemClick(AdapterView<?> arg0, View arg1,
 					int position, long arg3) {
 				arg1.requestFocusFromTouch();
-				// arg0.getChildAt(position).setBackgroundColor(Color.RED);
-				// arg1.setBackgroundColor(Color.RED);
-				// lv.getChildAt(position).setBackgroundColor(Color.RED);
-				// if (row != null) {
-				// row.setBackgroundColor(Color.TRANSPARENT);
-				// }
-				// row = arg1;
-				// arg1.setBackgroundColor(color.common_signin_btn_dark_text_focused);
-				//
 
-				new MakeCheckIn().execute(venueList, position, arg1, act);
+				new MakeCheckIn().execute(venueList, position, arg1, act,LoadVenues.CONST_LOADVENUES);
 
 			}
 
@@ -136,22 +124,41 @@ public class CheckIn extends FragmentActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
+
 		getMenuInflater().inflate(R.menu.check_in, menu);
+
 		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// TODO Auto-generated method stub
+		switch (item.getItemId()) {
+		case R.id.action_search:
+			Intent in = new Intent(this,
+					com.foursquare.android.fakecheckin.Search.class);
+			staticLocation
+					.setLatitude(myMap.getCameraPosition().target.latitude);
+			staticLocation
+					.setLongitude(myMap.getCameraPosition().target.longitude);
+			startActivity(in);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
 
 	private void parseVenues(Location ll) {
 
 		ListView lv = (ListView) findViewById(R.id.lvVenues);
 		lv.setVisibility(View.GONE);
-
-		// prog.animate();
+		venueList = new ArrayList<Venue>();
 		try {
-			new LoadVenues().execute(ll, venueList, this);
+
+			new LoadVenues().execute(ll, venueList, this,
+					LoadVenues.CONST_LOADVENUES);
 		} catch (Exception e) {
-			// In your production code handle any errors and catch the
-			// individual exceptions
+
 			Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT)
 					.show();
 		}

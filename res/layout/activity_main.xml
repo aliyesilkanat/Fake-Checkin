@@ -16,7 +16,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#e8e3dc"
+    android:background="#2A323D"
     android:gravity="center"
     android:orientation="vertical" >
 
@@ -29,7 +29,7 @@
         android:paddingLeft="32dp"
         android:paddingRight="32dp"
         android:text="@string/connected_to_foursquare"
-        android:textColor="#222"
+        android:textColor="#000000"
         android:textSize="22sp" />
 
     <Button

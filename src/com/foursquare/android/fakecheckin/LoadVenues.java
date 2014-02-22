@@ -16,12 +16,15 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.foursquare.android.fakecheckin.R.string;
+
 import android.app.Activity;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView.FindListener;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
@@ -33,20 +36,56 @@ import android.widget.Toast;
  * 
  */
 public class LoadVenues extends AsyncTask<Object, View, Activity> {
-	Venue venueList[];
+	List<Venue> venueList;
 	JSONArray arrayVenues;
+	public static final int CONST_LOADVENUES = 0;
+	public static final int CONST_SUGGESTVENUES = 1;
+	int loadType;
+	String query;
 
 	@Override
-	protected Activity doInBackground(Object... params) throws RuntimeException {
-		// TODO Auto-generated method stub
-		MakeCheckIn.initializeCheckedInArrays();
-		Location ll = (Location) params[0];
-		venueList = (Venue[]) params[1];
-		final Activity act = (Activity) params[2];
-		final ProgressBar prog = (ProgressBar) act
-				.findViewById(R.id.progressBar);
+	protected Activity doInBackground(Object... params) {
 
-		final ListView lv = (ListView) act.findViewById(R.id.lvVenues);
+		Location ll = (Location) params[0];
+		venueList = (List<Venue>) params[1];
+
+		final Activity act = (Activity) params[2];
+		loadType = (Integer) params[3];
+		final ProgressBar prog;
+		String venueSearchUrl = "";
+
+		ListView nonFinalLv = null;
+		ProgressBar nonFinalProg = null;
+		if (loadType == CONST_LOADVENUES) {
+			act.runOnUiThread(new Runnable() {
+
+				@Override
+				public void run() {
+					
+						act.findViewById(R.id.btnRefresh).setEnabled(false);
+				}
+			});
+			nonFinalProg = (ProgressBar) act.findViewById(R.id.progressBar);
+			nonFinalLv = (ListView) act.findViewById(R.id.lvVenues);
+			venueSearchUrl = "https://api.foursquare.com/v2/venues/search?ll="
+					+ ll.getLatitude() + "," + ll.getLongitude()
+					+ "&llAcc=1&altAcc=1&limit=20&intent=checkin&oauth_token="
+					+ MainActivity.ACCESS_TOKEN + "&v="
+					+ DateSingleton.getDate();
+		} else if (loadType == CONST_SUGGESTVENUES) {
+			nonFinalProg = (ProgressBar) act
+					.findViewById(R.id.progressBarSearch);
+			nonFinalLv = (ListView) act.findViewById(R.id.lvSearchVenues);
+			query = (String) params[4];
+			venueSearchUrl = "https://api.foursquare.com/v2/venues/search?ll="
+					+ ll.getLatitude() + "," + ll.getLongitude()
+					+ "&llAcc=10&altAcc=10&query=" + query
+					+ "&intent=checkin&limit=20&oauth_token="
+					+ MainActivity.ACCESS_TOKEN + "&v="
+					+ DateSingleton.getDate();
+		}
+		prog = nonFinalProg;
+		final ListView lv = nonFinalLv;
 		act.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
@@ -55,13 +94,6 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 				lv.setVisibility(View.GONE);
 			}
 		});
-
-		final String venueSearchUrl = "https://api.foursquare.com/v2/venues/search?ll="
-				+ ll.getLatitude()
-				+ ","
-				+ ll.getLongitude()
-				+ "&llAcc=1&altAcc=1&limit=20&intent=checkin&oauth_token="
-				+ MainActivity.ACCESS_TOKEN + "&v=20140215";
 
 		try {
 			DefaultHttpClient defaultClient = new DefaultHttpClient();
@@ -89,11 +121,20 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 					}
 				});
 			} else {
+				if (loadType == CONST_LOADVENUES) {
+					MakeCheckIn.initializeCheckedInArrays(CONST_LOADVENUES,
+							arrayVenues.length());
+				} else if (loadType == CONST_SUGGESTVENUES) {
+					MakeCheckIn.initializeCheckedInArrays(CONST_SUGGESTVENUES,
+							arrayVenues.length());
+				}
 				for (int i = 0; i < arrayVenues.length(); i++) {
 					JSONObject jObj = arrayVenues.getJSONObject(i);
-					venueList[i].name = jObj.getString("name");
-					venueList[i].venueId = jObj.getString("id");
-
+					venueList.add(new Venue());
+					venueList.get(i).name = jObj.getString("name");
+					venueList.get(i).venueId = jObj.getString("id");
+					venueList.get(i).address = "";
+					venueList.get(i).category = "";
 					if (jObj.has("categories")) {
 						JSONArray jCategoryArr = jObj
 								.getJSONArray("categories");
@@ -101,7 +142,7 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 							JSONObject jCategoryObj = jCategoryArr
 									.getJSONObject(0);
 							if (jCategoryObj.has("shortName"))
-								venueList[i].category = jCategoryObj
+								venueList.get(i).category = jCategoryObj
 										.getString("shortName");
 						}
 						// else
@@ -109,23 +150,25 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 					}
 					String locationStr = jObj.getString("location");
 					JSONObject responseLocation = new JSONObject(locationStr);
-					if (responseLocation.has("address"))
 
-						venueList[i].address = responseLocation
+					venueList.get(i).distance = responseLocation
+							.getString("distance");
+					if (responseLocation.has("address"))
+						venueList.get(i).address = responseLocation
 								.getString("address");
 					else if (responseLocation.has("city"))
-						venueList[i].address = responseLocation
+						venueList.get(i).address = responseLocation
 								.getString("city");
 					else if (responseLocation.has("country"))
-						venueList[i].address = responseLocation
+						venueList.get(i).address = responseLocation
 								.getString("country");
 					// else venueList[i].address="";
 
 				}
 			}
 		} catch (Exception e) {
-
-			throw new RuntimeException();
+			Toast.makeText(act.getApplicationContext(), e.getMessage(),
+					Toast.LENGTH_LONG).show();
 		}
 
 		return act;
@@ -134,22 +177,27 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 	@Override
 	protected void onPostExecute(final Activity result) {
 		super.onPostExecute(result);
+		final ListView listView;
+		ListView nonFinalLv = null;
+		if (loadType == CONST_LOADVENUES) {
+			nonFinalLv = (ListView) result.findViewById(R.id.lvVenues);
+		} else if (loadType == CONST_SUGGESTVENUES) {
+			nonFinalLv = (ListView) result.findViewById(R.id.lvSearchVenues);
+		}
+		listView = nonFinalLv;
+		if (arrayVenues.length() > 0) {
+			final List<Map<String, String>> data = new ArrayList<Map<String, String>>();
 
-		final ListView listView = (ListView) result.findViewById(R.id.lvVenues);
-		if (arrayVenues.length()> 0) {
+			for (Venue v : venueList) {
+				Map<String, String> datum = new HashMap<String, String>(2);
+				datum.put("First Line", v.name);
+				datum.put("Second Line", v.category + " / " + v.address + " ("
+						+ v.distance + "m)");
+				data.add(datum);
+			}
 			result.runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-
-					List<Map<String, String>> data = new ArrayList<Map<String, String>>();
-
-					for (Venue v : venueList) {
-						Map<String, String> datum = new HashMap<String, String>(
-								2);
-						datum.put("First Line", v.name);
-						datum.put("Second Line", v.category + " / " + v.address);
-						data.add(datum);
-					}
 
 					SimpleAdapter adapter = new SimpleAdapter(result, data,
 							android.R.layout.simple_list_item_2, new String[] {
@@ -165,15 +213,19 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 										.findViewById(android.R.id.text1));
 								TextView text2 = ((TextView) convertView
 										.findViewById(android.R.id.text2));
-								if (MakeCheckIn.checkedInVenuesIds[position]) {
+								if (loadType == CONST_LOADVENUES
+										&& MakeCheckIn.checkedInVenuesIds[position]) {
 									convertView
 											.setBackgroundResource(R.color.custom1);
-
 									text1.setTextColor(Color.BLACK);
 									text2.setTextColor(Color.BLACK);
-								}
-
-								else {
+								} else if (loadType == CONST_SUGGESTVENUES
+										&& MakeCheckIn.checkedInSuggestedVenuesIds[position]) {
+									convertView
+											.setBackgroundResource(R.color.custom1);
+									text1.setTextColor(Color.BLACK);
+									text2.setTextColor(Color.BLACK);
+								} else {
 									convertView
 											.setBackgroundColor(Color.TRANSPARENT);
 									text1.setTextColor(Color.WHITE);
@@ -187,22 +239,26 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 
 					};
 
-					
 					listView.setAdapter(adapter);
 					listView.setVisibility(View.VISIBLE);
 				}
 			});
 		}
-		//if koslu disina yapýlarak liste bos oldugunda da progressBar ýn donmesi onlendi
+		// if koslu disina yapýlarak liste bos oldugunda da progressBar ýn
+		// donmesi onlendi
 		result.runOnUiThread(new Runnable() {
-			
+
 			@Override
 			public void run() {
-				ProgressBar prog = (ProgressBar) result
-						.findViewById(R.id.progressBar);
+				if (loadType == CONST_LOADVENUES) {
+					result.findViewById(R.id.progressBar).setVisibility(
+							View.GONE);
+							result.findViewById(R.id.btnRefresh).setEnabled(true);
+				} else if (loadType == CONST_SUGGESTVENUES) {
+					result.findViewById(R.id.progressBarSearch).setVisibility(
+							View.GONE);
+				}
 
-				prog.setVisibility(View.GONE);
-				
 			}
 		});
 

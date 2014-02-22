@@ -39,7 +39,7 @@
     </ListView>
 
     <Button
-        android:id="@+id/refresh"
+        android:id="@+id/btnRefresh"
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
