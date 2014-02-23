@@ -53,7 +53,8 @@
         </activity>
         <activity
             android:name="com.foursquare.android.fakecheckin.Search"
-            android:label="@string/title_activity_search" >
+            android:label="@string/title_activity_search"
+            android:windowSoftInputMode="stateAlwaysVisible" >
         </activity>
     </application>
 
