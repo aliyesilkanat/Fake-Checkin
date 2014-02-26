@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -46,7 +47,7 @@ import com.foursquare.android.nativeoauth.model.AuthCodeResponse;
  * 
  * @date 2013-06-01
  */
-public class MainActivity extends FragmentActivity {
+public  class MainActivity extends FragmentActivity {
 
 	private static final int REQUEST_CODE_FSQ_CONNECT = 200;
 	private static final int REQUEST_CODE_FSQ_TOKEN_EXCHANGE = 201;
@@ -57,7 +58,7 @@ public class MainActivity extends FragmentActivity {
 	 */
 	private static final String CLIENT_ID = "X0B0US1NYEHEY35ZHYJSRYADN1DSG3WBGUSRILD5NB3RSAUR";
 	private static final String CLIENT_SECRET = "HPVXUN5MHLVEW4WRUZ2ZSDFA5GFRVEEO0PFMD4KISTXOCI10";
-	public static String ACCESS_TOKEN;
+
 
 	private SharedPreferences.Editor prefsEditor;
 
@@ -65,11 +66,10 @@ public class MainActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
-				.permitAll().build();
-		StrictMode.setThreadPolicy(policy);
+		
+		
+		Log.i("override", "MainActOnCreate");
 		ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
 		NetworkInfo ni = cm.getActiveNetworkInfo();
 		if (ni == null) {
 
@@ -98,7 +98,7 @@ public class MainActivity extends FragmentActivity {
 			else {
 				Intent in = new Intent(this,
 						com.foursquare.android.fakecheckin.CheckIn.class);
-				ACCESS_TOKEN = token;
+				Venue.ACCESS_TOKEN = token;
 				startActivity(in);
 				this.finish();
 			}
@@ -159,7 +159,7 @@ public class MainActivity extends FragmentActivity {
 		});
 		if (isAuthorized) {
 
-			prefsEditor.putString("accessToken", ACCESS_TOKEN);
+			prefsEditor.putString("accessToken", Venue.ACCESS_TOKEN);
 			prefsEditor.commit();
 			Intent in = new Intent(this, CheckIn.class);
 			startActivity(in);
@@ -217,7 +217,7 @@ public class MainActivity extends FragmentActivity {
 			String accessToken = tokenResponse.getAccessToken();
 			// Success.
 			toastMessage(this, "Access token: " + accessToken);
-			ACCESS_TOKEN = accessToken;
+			Venue.ACCESS_TOKEN= accessToken;
 			// Persist the token for later use. In this example, we save
 			// it to shared prefs.
 			ExampleTokenStore.get().setToken(accessToken);

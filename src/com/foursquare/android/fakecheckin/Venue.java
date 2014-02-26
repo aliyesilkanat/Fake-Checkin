@@ -18,5 +18,5 @@ public class Venue {
 	public String address;
 	public String category;
 	public String distance;
-
+	public static String ACCESS_TOKEN;
 }

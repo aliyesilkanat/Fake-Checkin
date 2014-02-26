@@ -12,19 +12,18 @@ import java.util.Map;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import com.foursquare.android.fakecheckin.R.string;
-
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.http.AndroidHttpClient;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView.FindListener;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
@@ -42,6 +41,7 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 	public static final int CONST_SUGGESTVENUES = 1;
 	int loadType;
 	String query;
+	private AndroidHttpClient defaultClient;
 
 	@Override
 	protected Activity doInBackground(Object... params) {
@@ -56,13 +56,14 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 
 		ListView nonFinalLv = null;
 		ProgressBar nonFinalProg = null;
+
 		if (loadType == CONST_LOADVENUES) {
 			act.runOnUiThread(new Runnable() {
 
 				@Override
 				public void run() {
-					
-						act.findViewById(R.id.btnRefresh).setEnabled(false);
+
+					act.findViewById(R.id.btnRefresh).setEnabled(false);
 				}
 			});
 			nonFinalProg = (ProgressBar) act.findViewById(R.id.progressBar);
@@ -70,7 +71,7 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 			venueSearchUrl = "https://api.foursquare.com/v2/venues/search?ll="
 					+ ll.getLatitude() + "," + ll.getLongitude()
 					+ "&llAcc=1&altAcc=1&limit=20&intent=checkin&oauth_token="
-					+ MainActivity.ACCESS_TOKEN + "&v="
+					+ Venue.ACCESS_TOKEN + "&v="
 					+ DateSingleton.getDate();
 		} else if (loadType == CONST_SUGGESTVENUES) {
 			nonFinalProg = (ProgressBar) act
@@ -81,7 +82,7 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 					+ ll.getLatitude() + "," + ll.getLongitude()
 					+ "&llAcc=10&altAcc=10&query=" + query
 					+ "&intent=checkin&limit=20&oauth_token="
-					+ MainActivity.ACCESS_TOKEN + "&v="
+					+ Venue.ACCESS_TOKEN + "&v="
 					+ DateSingleton.getDate();
 		}
 		prog = nonFinalProg;
@@ -96,11 +97,13 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 		});
 
 		try {
-			DefaultHttpClient defaultClient = new DefaultHttpClient();
+
+			defaultClient = AndroidHttpClient.newInstance("Android");
 			HttpGet httpGetRequest = new HttpGet(venueSearchUrl);
 			HttpResponse httpResponse = defaultClient.execute(httpGetRequest);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(
 					httpResponse.getEntity().getContent(), "UTF-8"));
+			Log.i("GETURL", venueSearchUrl);
 			String json = reader.readLine();
 
 			JSONObject jsonObject = new JSONObject(json);
@@ -108,6 +111,7 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 
 			JSONObject responseJson = new JSONObject(s);
 			arrayVenues = responseJson.getJSONArray("venues");
+			defaultClient.close();
 			if (arrayVenues.length() == 0)
 
 			{
@@ -166,9 +170,17 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 
 				}
 			}
-		} catch (Exception e) {
-			Toast.makeText(act.getApplicationContext(), e.getMessage(),
-					Toast.LENGTH_LONG).show();
+		} catch (final Exception e) {
+			act.runOnUiThread(new Runnable() {
+
+				@Override
+				public void run() {
+					Toast.makeText(act.getApplicationContext(), e.getMessage(),
+							Toast.LENGTH_LONG).show();
+
+				}
+			});
+
 		}
 
 		return act;
@@ -179,88 +191,107 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 		super.onPostExecute(result);
 		final ListView listView;
 		ListView nonFinalLv = null;
-		if (loadType == CONST_LOADVENUES) {
-			nonFinalLv = (ListView) result.findViewById(R.id.lvVenues);
-		} else if (loadType == CONST_SUGGESTVENUES) {
-			nonFinalLv = (ListView) result.findViewById(R.id.lvSearchVenues);
-		}
-		listView = nonFinalLv;
-		if (arrayVenues.length() > 0) {
-			final List<Map<String, String>> data = new ArrayList<Map<String, String>>();
-
-			for (Venue v : venueList) {
-				Map<String, String> datum = new HashMap<String, String>(2);
-				datum.put("First Line", v.name);
-				datum.put("Second Line", v.category + " / " + v.address + " ("
-						+ v.distance + "m)");
-				data.add(datum);
+		try {
+			if (loadType == CONST_LOADVENUES) {
+				nonFinalLv = (ListView) result.findViewById(R.id.lvVenues);
+			} else if (loadType == CONST_SUGGESTVENUES) {
+				nonFinalLv = (ListView) result
+						.findViewById(R.id.lvSearchVenues);
 			}
+			listView = nonFinalLv;
+			if (arrayVenues.length() > 0) {
+				final List<Map<String, String>> data = new ArrayList<Map<String, String>>();
+
+				for (Venue v : venueList) {
+					Map<String, String> datum = new HashMap<String, String>(2);
+					datum.put("First Line", v.name);
+					datum.put("Second Line", v.category + " / " + v.address
+							+ " (" + v.distance + "m)");
+					data.add(datum);
+				}
+				result.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+
+						SimpleAdapter adapter = new SimpleAdapter(result, data,
+								android.R.layout.simple_list_item_2,
+								new String[] { "First Line", "Second Line" },
+								new int[] { android.R.id.text1,
+										android.R.id.text2 }) {
+
+							@Override
+							public View getView(int position, View convertView,
+									ViewGroup parent) {
+
+								if (convertView != null) {
+									TextView text1 = ((TextView) convertView
+											.findViewById(android.R.id.text1));
+									TextView text2 = ((TextView) convertView
+											.findViewById(android.R.id.text2));
+									if (loadType == CONST_LOADVENUES
+											&& MakeCheckIn.checkedInVenuesIds[position]) {
+										convertView
+												.setBackgroundResource(R.color.custom1);
+										text1.setTextColor(Color.BLACK);
+										text2.setTextColor(Color.BLACK);
+									} else if (loadType == CONST_SUGGESTVENUES
+											&& MakeCheckIn.checkedInSuggestedVenuesIds[position]) {
+										convertView
+												.setBackgroundResource(R.color.custom1);
+										text1.setTextColor(Color.BLACK);
+										text2.setTextColor(Color.BLACK);
+									} else {
+										convertView
+												.setBackgroundColor(Color.TRANSPARENT);
+										text1.setTextColor(Color.WHITE);
+										text2.setTextColor(Color.WHITE);
+									}
+								}
+								this.notifyDataSetChanged();
+
+								return super.getView(position, convertView,
+										parent);
+							}
+
+						};
+
+						listView.setAdapter(adapter);
+						listView.setVisibility(View.VISIBLE);
+					}
+				});
+			}
+			// if koslu disina yapýlarak liste bos oldugunda da progressBar ýn
+			// donmesi onlendi
 			result.runOnUiThread(new Runnable() {
+
 				@Override
 				public void run() {
+					if (loadType == CONST_LOADVENUES) {
+						result.findViewById(R.id.progressBar).setVisibility(
+								View.GONE);
+						result.findViewById(R.id.btnRefresh).setEnabled(true);
+					} else if (loadType == CONST_SUGGESTVENUES) {
+						result.findViewById(R.id.progressBarSearch)
+								.setVisibility(View.GONE);
+					}
 
-					SimpleAdapter adapter = new SimpleAdapter(result, data,
-							android.R.layout.simple_list_item_2, new String[] {
-									"First Line", "Second Line" }, new int[] {
-									android.R.id.text1, android.R.id.text2 }) {
+				}
+			});
+		} catch (final Exception ex) {
+			Log.i("TOKEN", ex.getMessage());
+			defaultClient.close();
+			Intent intent = new Intent(result, MainActivity.class);
+			result.startActivity(intent);
+			result.finish();
+			result.runOnUiThread(new Runnable() {
 
-						@Override
-						public View getView(int position, View convertView,
-								ViewGroup parent) {
+				@Override
+				public void run() {
+					Toast.makeText(result.getApplicationContext(),
+							ex.getMessage(), Toast.LENGTH_LONG).show();
 
-							if (convertView != null) {
-								TextView text1 = ((TextView) convertView
-										.findViewById(android.R.id.text1));
-								TextView text2 = ((TextView) convertView
-										.findViewById(android.R.id.text2));
-								if (loadType == CONST_LOADVENUES
-										&& MakeCheckIn.checkedInVenuesIds[position]) {
-									convertView
-											.setBackgroundResource(R.color.custom1);
-									text1.setTextColor(Color.BLACK);
-									text2.setTextColor(Color.BLACK);
-								} else if (loadType == CONST_SUGGESTVENUES
-										&& MakeCheckIn.checkedInSuggestedVenuesIds[position]) {
-									convertView
-											.setBackgroundResource(R.color.custom1);
-									text1.setTextColor(Color.BLACK);
-									text2.setTextColor(Color.BLACK);
-								} else {
-									convertView
-											.setBackgroundColor(Color.TRANSPARENT);
-									text1.setTextColor(Color.WHITE);
-									text2.setTextColor(Color.WHITE);
-								}
-							}
-							this.notifyDataSetChanged();
-
-							return super.getView(position, convertView, parent);
-						}
-
-					};
-
-					listView.setAdapter(adapter);
-					listView.setVisibility(View.VISIBLE);
 				}
 			});
 		}
-		// if koslu disina yapýlarak liste bos oldugunda da progressBar ýn
-		// donmesi onlendi
-		result.runOnUiThread(new Runnable() {
-
-			@Override
-			public void run() {
-				if (loadType == CONST_LOADVENUES) {
-					result.findViewById(R.id.progressBar).setVisibility(
-							View.GONE);
-							result.findViewById(R.id.btnRefresh).setEnabled(true);
-				} else if (loadType == CONST_SUGGESTVENUES) {
-					result.findViewById(R.id.progressBarSearch).setVisibility(
-							View.GONE);
-				}
-
-			}
-		});
-
 	}
 }

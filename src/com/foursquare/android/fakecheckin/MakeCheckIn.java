@@ -68,7 +68,7 @@ public class MakeCheckIn extends AsyncTask<Object, View, Activity> {
 			nameValuePairs.add(new BasicNameValuePair("venueId", venueList
 					.get(position).venueId));
 			nameValuePairs.add(new BasicNameValuePair("oauth_token",
-					MainActivity.ACCESS_TOKEN));
+					Venue.ACCESS_TOKEN));
 
 			// gecici olarak alttaki satiri tut, program çalýþtýrýrken
 			// sil

@@ -11,6 +11,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -42,6 +43,7 @@ public class CheckIn extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.check_in);
+		Log.i("override", "onCreate");
 
 		final ListView lv = (ListView) findViewById(R.id.lvVenues);
 		prog = (ProgressBar) findViewById(R.id.progressBar);
@@ -56,8 +58,14 @@ public class CheckIn extends FragmentActivity {
 		SharedPreferences sharedPref = getSharedPreferences(
 				"fakeCheckInTokenFile", MODE_PRIVATE);
 		prefsEditor = sharedPref.edit();
+
+		if (savedInstanceState != null) {
+			Venue.ACCESS_TOKEN = sharedPref.getString("accessToken", "");
+			Log.i("override", "ACCESS_TOKEN=" + Venue.ACCESS_TOKEN);
+		}
 		String latitude = sharedPref.getString("latitude", "0");
 		String longitude = sharedPref.getString("longitude", "0");
+
 		final Location ll = new Location("");
 		if (!latitude.equals("0")) {
 			ll.setLatitude(Double.parseDouble(latitude));
@@ -71,6 +79,7 @@ public class CheckIn extends FragmentActivity {
 			ll.setLongitude(locationManager.getLastKnownLocation(
 					locationProvider).getLongitude());
 		}
+		// uygulamanýn multitask'ten devam etme durumu
 
 		parseVenues(ll);
 		adjustMap(ll); // sadece ilk seferinde haritayý eski yerine götürmek
@@ -100,7 +109,7 @@ public class CheckIn extends FragmentActivity {
 				prefsEditor.putString("longitude",
 						String.valueOf(ll.getLongitude()));
 				prefsEditor.commit();
-				
+
 			}
 		});
 
@@ -114,7 +123,8 @@ public class CheckIn extends FragmentActivity {
 					int position, long arg3) {
 				arg1.requestFocusFromTouch();
 
-				new MakeCheckIn().execute(venueList, position, arg1, act,LoadVenues.CONST_LOADVENUES);
+				new MakeCheckIn().execute(venueList, position, arg1, act,
+						LoadVenues.CONST_LOADVENUES);
 
 			}
 
@@ -161,6 +171,10 @@ public class CheckIn extends FragmentActivity {
 
 			Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT)
 					.show();
+
+			Intent in = new Intent(this, MainActivity.class);
+			startActivity(in);
+			finish();
 		}
 
 		lv.setVisibility(View.VISIBLE);
@@ -182,4 +196,25 @@ public class CheckIn extends FragmentActivity {
 		myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ll, 16));
 		return ll;
 	}
+
+	@Override
+	protected void onRestart() {
+		Log.i("override", "onRestart");
+
+		super.onRestart();
+	}
+
+	@Override
+	protected void onStop() {
+		Log.i("override", "onStop");
+		// this.finish();
+		super.onStop();
+	}
+
+	@Override
+	protected void onDestroy() {
+		Log.i("override", "onDestroy");
+		super.onDestroy();
+	}
+
 }

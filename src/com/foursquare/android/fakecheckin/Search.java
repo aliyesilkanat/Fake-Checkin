@@ -33,24 +33,25 @@ public class Search extends Activity {
 		currentAct = this;
 		findViewById(R.id.lvSearchVenues).setVisibility(View.GONE);
 		findViewById(R.id.progressBarSearch).setVisibility(View.GONE);
-		ImageView img = (ImageView) findViewById(R.id.searchImage);
-		img.setOnClickListener(new OnClickListener() {
+		findViewById(R.id.searchImage).setOnClickListener(
+				new OnClickListener() {
 
-			@Override
-			public void onClick(View v) {
+					@Override
+					public void onClick(View v) {
 
-				venueSearchList = new ArrayList<Venue>();
-				new LoadVenues().execute(CheckIn.staticLocation,
-						venueSearchList, currentAct,
-						LoadVenues.CONST_SUGGESTVENUES,
-						((EditText) findViewById(R.id.editTxtSearch)).getText()
-								.toString());
-				InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+						venueSearchList = new ArrayList<Venue>();
+						new LoadVenues().execute(CheckIn.staticLocation,
+								venueSearchList, currentAct,
+								LoadVenues.CONST_SUGGESTVENUES,
+								((EditText) findViewById(R.id.editTxtSearch))
+										.getText().toString());
+						InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
-				inputManager.hideSoftInputFromWindow(getCurrentFocus()
-						.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-			}
-		});
+						inputManager.hideSoftInputFromWindow(getCurrentFocus()
+								.getWindowToken(),
+								InputMethodManager.HIDE_NOT_ALWAYS);
+					}
+				});
 
 		EditText editText = (EditText) findViewById(R.id.editTxtSearch);
 		editText.requestFocus();
@@ -84,8 +85,8 @@ public class Search extends Activity {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2,
 					long arg3) {
 				arg1.requestFocusFromTouch();
-				new MakeCheckIn().execute(venueSearchList,
-					arg2, arg1, act,LoadVenues.CONST_SUGGESTVENUES);
+				new MakeCheckIn().execute(venueSearchList, arg2, arg1, act,
+						LoadVenues.CONST_SUGGESTVENUES);
 			}
 
 		});
