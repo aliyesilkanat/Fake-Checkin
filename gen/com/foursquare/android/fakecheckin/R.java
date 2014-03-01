@@ -369,6 +369,7 @@ containing a value of this type.
         public static final int title_activity_check_in=0x7f040022;
         public static final int title_activity_search=0x7f040025;
         public static final int title_activity_test1=0x7f04001f;
+        public static final int venue_not_found=0x7f040026;
     }
     public static final class styleable {
         /** Attributes that can be used with a AdsAttrs.

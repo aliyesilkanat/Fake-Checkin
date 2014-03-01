@@ -130,6 +130,7 @@ int string menu_settings 0x7f04001c
 int string title_activity_check_in 0x7f040022
 int string title_activity_search 0x7f040025
 int string title_activity_test1 0x7f04001f
+int string venue_not_found 0x7f040026
 int[] styleable AdsAttrs { 0x7f010000, 0x7f010001, 0x7f010002 }
 int styleable AdsAttrs_adSize 0
 int styleable AdsAttrs_adSizes 1

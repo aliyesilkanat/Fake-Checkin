@@ -1,7 +1,6 @@
 package com.foursquare.android.fakecheckin;
 
 import java.util.Calendar;
-import java.util.Date;
 
 public class DateSingleton {
 

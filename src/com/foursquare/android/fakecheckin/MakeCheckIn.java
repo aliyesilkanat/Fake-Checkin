@@ -60,7 +60,8 @@ public class MakeCheckIn extends AsyncTask<Object, View, Activity> {
 					// TODO Auto-generated method stub
 					TextView text = ((TextView) view
 							.findViewById(android.R.id.text2));
-					text.setText("CheckIn Yapýlýyor...");
+					text.setText("Checking you in...");
+		
 				}
 			});
 
@@ -72,7 +73,7 @@ public class MakeCheckIn extends AsyncTask<Object, View, Activity> {
 
 			// gecici olarak alttaki satiri tut, program çalýþtýrýrken
 			// sil
-			nameValuePairs.add(new BasicNameValuePair("broadcast", "private"));
+//			nameValuePairs.add(new BasicNameValuePair("broadcast", "private"));
 
 			httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
@@ -89,7 +90,7 @@ public class MakeCheckIn extends AsyncTask<Object, View, Activity> {
 					// TODO Auto-generated method stub
 					TextView text = ((TextView) view
 							.findViewById(android.R.id.text2));
-					text.setText("CheckIn Yapýldý");
+					text.setText("Checked in");
 					ListView listv = null;
 					if (loadType == LoadVenues.CONST_LOADVENUES)
 						listv = (ListView) act.findViewById(R.id.lvVenues);

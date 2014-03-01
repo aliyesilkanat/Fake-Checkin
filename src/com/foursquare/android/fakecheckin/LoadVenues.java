@@ -120,7 +120,7 @@ public class LoadVenues extends AsyncTask<Object, View, Activity> {
 					@Override
 					public void run() {
 						Toast.makeText(act.getApplicationContext(),
-								"Mekan bulunamadý", Toast.LENGTH_LONG).show();
+								R.string.venue_not_found, Toast.LENGTH_LONG).show();
 
 					}
 				});

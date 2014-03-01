@@ -17,7 +17,7 @@
         android:layout_alignParentLeft="true"
         android:layout_toLeftOf="@+id/searchImage"
         android:ems="10"
-        android:hint="Search"
+        android:hint="@string/title_activity_search"
         android:imeOptions="actionSearch"
         android:inputType="text"
         android:maxLength="15"
@@ -34,11 +34,11 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/editTxtSearch"
         android:layout_alignParentRight="true"
-        android:contentDescription="Search Button"
+        android:contentDescription="@string/title_activity_search"
         android:paddingLeft="1dp"
         android:src="@android:drawable/ic_menu_search" />
 
-</RelativeLayout>>
+</RelativeLayout>
 
     <ListView
         android:id="@+id/lvSearchVenues"
@@ -58,6 +58,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="170dp" />
+        android:layout_marginTop="170dp"
+        />
 
 </RelativeLayout>

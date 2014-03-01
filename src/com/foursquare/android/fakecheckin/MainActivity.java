@@ -23,7 +23,6 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -76,10 +75,10 @@ public  class MainActivity extends FragmentActivity {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
 			builder.setMessage(
-					"Ýnternet baðlantýsý kurulamadý")
+					"Cannot connect to internet ")
 					.setTitle(
-							R.string.common_google_play_services_network_error_title);
-			builder.setPositiveButton("Kapat",
+							"Error");
+			builder.setPositiveButton("Close",
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int id) {
 							finish();
@@ -216,7 +215,7 @@ public  class MainActivity extends FragmentActivity {
 		if (exception == null) {
 			String accessToken = tokenResponse.getAccessToken();
 			// Success.
-			toastMessage(this, "Access token: " + accessToken);
+//			toastMessage(this, "Access token: " + accessToken);
 			Venue.ACCESS_TOKEN= accessToken;
 			// Persist the token for later use. In this example, we save
 			// it to shared prefs.
